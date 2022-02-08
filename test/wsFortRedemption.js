@@ -25,7 +25,10 @@ describe("Redemption contract", function () {
 
     // validate wsFORT exists in wallet and is of correct amounts 
     const wrappedBalanceExpected = BigInt(redeemableQuantity / await sfort.index() * Math.pow(10, 9));
-    expect(BigInt(await wsfort.balanceOf(owner.address))).to.equal(wrappedBalanceExpected);
+    console.log(wrappedBalanceExpected);
+    const ownerWsFORTBalance = BigInt(await wsfort.balanceOf(owner.address));
+    console.log(ownerWsFORTBalance);
+    expect(ownerWsFORTBalance).to.equal(wrappedBalanceExpected);
     expect(await wsfort.totalSupply()).to.equal(wrappedBalanceExpected);
 
     // validate mim balance of owner
@@ -34,23 +37,23 @@ describe("Redemption contract", function () {
 
     // deploy redemption contract
     const FortRedemptionFactory = await ethers.getContractFactory("wsFortRedemption");
-    
     const fortRedemption = await FortRedemptionFactory.deploy(wsfort.address, fusd.address, redeemableQuantity);
 
     //transfer mim into contract as reserve supply
     await wsfort.increaseAllowance(fortRedemption.address, await wsfort.balanceOf(owner.address));
     await fusd.increaseAllowance(fortRedemption.address, await fusd.totalSupply());
-    //await mim.transferFrom(owner.address, fortRedemption.address, await mim.totalSupply());
+    
+    //deposit redeemable funds into contract and make contract active
     await fortRedemption.makeRedeemable(await fusd.totalSupply());
 
-    // validate fort redemption has mim and original wallet is empty
+    // validate fort redemption has FUSD and original wallet is empty
     expect(await fusd.balanceOf(fortRedemption.address)).to.equal(await fusd.totalSupply());
     expect(await fusd.balanceOf(owner.address)).to.equal(0);
     
     // attempt to redeem 100 tokens
     await fortRedemption.redeemTokens(owner.address, 100 * Math.pow(10, 9));
 
-    expect(await mim.balanceOf(owner.address)).to.equal(766759864502);
+    expect(await fusd.balanceOf(owner.address)).to.equal(766759864502);
 
   });
 });
