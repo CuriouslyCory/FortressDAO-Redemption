@@ -24,8 +24,8 @@ describe("Redemption contract", function () {
     await wsfort.wrap(redeemableQuantity);
 
     // validate wsFORT exists in wallet and is of correct amounts 
-    const wrappedBalanceExpected = redeemableQuantity / await sfort.index();
-    expect(await wsfort.balanceOf(owner.address)).to.equal(wrappedBalanceExpected);
+    const wrappedBalanceExpected = BigInt(redeemableQuantity / await sfort.index() * Math.pow(10, 9));
+    expect(BigInt(await wsfort.balanceOf(owner.address))).to.equal(wrappedBalanceExpected);
     expect(await wsfort.totalSupply()).to.equal(wrappedBalanceExpected);
 
     // validate mim balance of owner
