@@ -16,7 +16,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 
 interface IFORT is IERC20 {}
 
-contract FortRedemption is Ownable, ReentrancyGuard{
+contract wsFortRedemption is Ownable, ReentrancyGuard{
     using SafeERC20 for IERC20;
 
     IFORT public immutable wsFortToken;
@@ -24,22 +24,21 @@ contract FortRedemption is Ownable, ReentrancyGuard{
     address public FORT;
     bool public redeemable;
     uint256 reservePerFort;
+    uint256 redeemableQty;
 
-    constructor(address _WSFORT, address _reserveCurrency, ){
+    constructor(address _WSFORT, address _reserveCurrency, uint256 _redeemableQty){
         require( _WSFORT != address(0) );
         wsFortToken = IFORT(_WSFORT);
         reserveCurrency = IERC20(_reserveCurrency);
+        redeemableQty = _redeemableQty;
     }
 
     function makeRedeemable (uint256 amount) external onlyOwner {
         require(redeemable == false);
         IERC20(reserveCurrency).transferFrom(msg.sender, address(this), amount);
         uint256 remainingReserve = reserveCurrency.balanceOf(address(this));
-        uint256 circulatingSupply = IFORT(wsFortToken).totalSupply() * 10 ** 9;
 
-        
-
-        reservePerFort = SafeMath.div(remainingReserve * 10 ** 18, circulatingSupply);
+        reservePerFort = SafeMath.div(remainingReserve * 10 ** 18, redeemableQty);
         redeemable = true;
     }
 
